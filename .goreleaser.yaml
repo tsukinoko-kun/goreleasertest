@@ -42,7 +42,9 @@ builds:
       - -s -w -X github.com/tsukinoko-kun/goreleasertest/main.Version={{.Version}}
   - id: darwin
     env:
-      - CGO_ENABLED=0
+      - CGO_ENABLED=1
+      - CC=clang
+      - CXX=clang++
     goos:
       - darwin
     goarch:
