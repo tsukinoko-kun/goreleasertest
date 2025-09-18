@@ -19,11 +19,31 @@ before:
     - go mod tidy
 
 builds:
-  - env:
+  - id: linux
+    env:
       - CGO_ENABLED=1
     goos:
       - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X github.com/tsukinoko-kun/goreleasertest/main.Version={{.Version}}
+  - id: windows
+    env:
+      - CGO_ENABLED=1
+      - CC=x86_64-w64-mingw32-gcc
+      - CXX=x86_64-w64-mingw32-g++
+    goos:
       - windows
+    goarch:
+      - amd64
+    ldflags:
+      - -s -w -X github.com/tsukinoko-kun/goreleasertest/main.Version={{.Version}}
+  - id: darwin
+    env:
+      - CGO_ENABLED=0
+    goos:
       - darwin
     goarch:
       - amd64
