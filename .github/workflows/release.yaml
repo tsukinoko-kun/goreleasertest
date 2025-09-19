@@ -43,6 +43,12 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+      - name: Setup Windows ARM64 CGO toolchain
+        if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
+        run: |
+          choco install llvm
+          echo "CC=clang" >> $env:GITHUB_ENV
+          echo "CXX=clang++" >> $env:GITHUB_ENV
       - name: Download Go dependencies
         run: go mod download
       - name: Run GoReleaser
