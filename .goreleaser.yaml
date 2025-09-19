@@ -3,6 +3,9 @@
 
 version: 2
 
+partial:
+  by: target
+
 project_name: goreleasertest
 metadata:
   maintainers:
@@ -28,12 +31,6 @@ builds:
     goarch:
       - amd64
       - arm64
-    overrides:
-      - goos: linux
-        goarch: arm64
-        env:
-          - CGO_ENABLED=1
-          - CC=aarch64-linux-gnu-gcc
     ldflags:
       - -s -w -X github.com/tsukinoko-kun/goreleasertest/main.Version={{.Version}}
 
