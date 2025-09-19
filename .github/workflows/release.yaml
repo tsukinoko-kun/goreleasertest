@@ -55,9 +55,12 @@ jobs:
           # Remove GCC from PATH to force Go to use MSVC
           $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike '*mingw*' -and $_ -notlike '*gcc*' }) -join ';'
           echo "PATH=$env:PATH" >> $env:GITHUB_ENV
-          # Explicitly set CGO to use cl
+          # Explicitly set CGO to use cl with MSVC-compatible flags
           echo "CC=cl" >> $env:GITHUB_ENV
           echo "CXX=cl" >> $env:GITHUB_ENV
+          echo "CGO_CFLAGS=" >> $env:GITHUB_ENV
+          echo "CGO_CXXFLAGS=" >> $env:GITHUB_ENV
+          echo "CGO_LDFLAGS=" >> $env:GITHUB_ENV
       - name: Download Go dependencies
         run: go mod download
       - name: Run GoReleaser
