@@ -44,30 +44,16 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Setup MSVC
-        if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: arm64
-      - name: Force MSVC for CGO
+      - name: Setup Windows ARM64 toolchain
         if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
         run: |
-          # Remove GCC from PATH to force Go to use MSVC
-          $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike '*mingw*' -and $_ -notlike '*gcc*' }) -join ';'
-          echo "PATH=$env:PATH" >> $env:GITHUB_ENV
-          # Create PowerShell wrapper script to filter out incompatible flags
-          @'
-          $args = $args | Where-Object { $_ -ne '/Werror' -and $_ -ne '-Werror' }
-          & cl.exe $args
-          exit $LASTEXITCODE
-          '@ | Out-File -FilePath "cl-wrapper.ps1" -Encoding UTF8
-          # Create batch wrapper to call PowerShell
-          @"
-          @echo off
-          powershell -ExecutionPolicy Bypass -File "$((Get-Location).Path)\cl-wrapper.ps1" %*
-          "@ | Out-File -FilePath "cl-wrapper.bat" -Encoding ASCII
-          echo "CC=$((Get-Location).Path)\cl-wrapper.bat" >> $env:GITHUB_ENV
-          echo "CXX=$((Get-Location).Path)\cl-wrapper.bat" >> $env:GITHUB_ENV
+          # Install MinGW-w64 for ARM64
+          choco install mingw --force
+          # Check what compilers are available
+          echo "Available compilers:"
+          where gcc 2>$null || echo "gcc not found"
+          where clang 2>$null || echo "clang not found"
+          where aarch64-w64-mingw32-gcc 2>$null || echo "aarch64-w64-mingw32-gcc not found"
       - name: Download Go dependencies
         run: go mod download
       - name: Run GoReleaser
