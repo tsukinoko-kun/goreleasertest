@@ -43,19 +43,12 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+
       - name: Setup Windows ARM64 CGO toolchain
         if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
         run: |
-          choco install llvm
-          # Create wrapper script to filter out -mthreads
-          @"
-          @echo off
-          set args=%*
-          set args=%args:-mthreads=%
-          clang --target=aarch64-pc-windows-msvc %args%
-          "@ | Out-File -FilePath "clang-wrapper.bat" -Encoding ASCII
-          echo "CC=$((Get-Location).Path)\clang-wrapper.bat" >> $env:GITHUB_ENV
-          echo "CXX=clang++ --target=aarch64-pc-windows-msvc" >> $env:GITHUB_ENV
+          # Just ensure we have the C/C++ build tools for native ARM64
+          choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools"
       - name: Download Go dependencies
         run: go mod download
       - name: Run GoReleaser
