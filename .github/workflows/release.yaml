@@ -47,15 +47,13 @@ jobs:
         if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
         shell: powershell
         run: |
-          # Install MSYS2 via Chocolatey
-          choco install msys2 --no-progress
-          
-          # Install mingw-w64 aarch64 toolchain
+          choco install msys2 -y --no-progress
           & 'C:\tools\msys64\usr\bin\bash.exe' -lc "pacman -Syu --noconfirm"
-          & 'C:\tools\msys64\usr\bin\bash.exe' -lc "pacman -S --noconfirm mingw-w64-aarch64-toolchain"
-          
-          # Add to PATH for subsequent steps
-          echo "C:\tools\msys64\mingw64\bin" >> $env:GITHUB_PATH
+          & 'C:\tools\msys64\usr\bin\bash.exe' -lc `
+            "pacman -S --noconfirm --needed `
+             mingw-w64-clang-aarch64-cc `
+             mingw-w64-clang-aarch64-pkgconf"
+          echo "C:\tools\msys64\clangarm64\bin" >> $env:GITHUB_PATH
       - name: Download Go dependencies
         run: go mod download
       - name: Run GoReleaser
@@ -69,6 +67,9 @@ jobs:
           GORELEASER_KEY: ${{ secrets.GORELEASER }}
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 1
+          CC: clang
+          CXX: clang++
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
