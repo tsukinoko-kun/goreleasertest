@@ -55,12 +55,16 @@ jobs:
           # Remove GCC from PATH to force Go to use MSVC
           $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike '*mingw*' -and $_ -notlike '*gcc*' }) -join ';'
           echo "PATH=$env:PATH" >> $env:GITHUB_ENV
-          # Create wrapper script to filter out incompatible flags
+          # Create PowerShell wrapper script to filter out incompatible flags
+          @'
+          $args = $args | Where-Object { $_ -ne '/Werror' -and $_ -ne '-Werror' }
+          & cl.exe $args
+          exit $LASTEXITCODE
+          '@ | Out-File -FilePath "cl-wrapper.ps1" -Encoding UTF8
+          # Create batch wrapper to call PowerShell
           @"
           @echo off
-          set args=%*
-          set args=%args:/Werror=%
-          cl %args%
+          powershell -ExecutionPolicy Bypass -File "$((Get-Location).Path)\cl-wrapper.ps1" %*
           "@ | Out-File -FilePath "cl-wrapper.bat" -Encoding ASCII
           echo "CC=$((Get-Location).Path)\cl-wrapper.bat" >> $env:GITHUB_ENV
           echo "CXX=$((Get-Location).Path)\cl-wrapper.bat" >> $env:GITHUB_ENV
