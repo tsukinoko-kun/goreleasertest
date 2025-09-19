@@ -47,9 +47,15 @@ jobs:
         if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
         run: |
           choco install llvm
-          echo "CC=clang --target=aarch64-pc-windows-msvc" >> $env:GITHUB_ENV
+          # Create wrapper script to filter out -mthreads
+          @"
+          @echo off
+          set args=%*
+          set args=%args:-mthreads=%
+          clang --target=aarch64-pc-windows-msvc %args%
+          "@ | Out-File -FilePath "clang-wrapper.bat" -Encoding ASCII
+          echo "CC=$((Get-Location).Path)\clang-wrapper.bat" >> $env:GITHUB_ENV
           echo "CXX=clang++ --target=aarch64-pc-windows-msvc" >> $env:GITHUB_ENV
-          echo "CGO_CFLAGS=-D_ARM64_" >> $env:GITHUB_ENV
       - name: Download Go dependencies
         run: go mod download
       - name: Run GoReleaser
