@@ -43,14 +43,19 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      - name: Setup Windows ARM64 CGO
+      - name: Setup Windows ARM64 CGO toolchain
         if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
+        shell: powershell
         run: |
-          # The issue: Windows ARM64 runner has x86_64 GCC that can't handle ARM64 assembly
-          # Simple solution: Use clang which has proper ARM64 support on Windows
-          choco install llvm
-          echo "CC=clang" >> $env:GITHUB_ENV
-          echo "CXX=clang++" >> $env:GITHUB_ENV
+          # Install MSYS2
+          winget install --id=MSYS2.MSYS2 -e --accept-package-agreements --accept-source-agreements
+          
+          # Install mingw-w64 aarch64 toolchain
+          & 'C:\msys64\usr\bin\bash.exe' -lc "pacman -Syu --noconfirm"
+          & 'C:\msys64\usr\bin\bash.exe' -lc "pacman -S --noconfirm mingw-w64-aarch64-toolchain"
+          
+          # Add to PATH for subsequent steps
+          echo "C:\msys64\mingw64\bin" >> $env:GITHUB_PATH
       - name: Download Go dependencies
         run: go mod download
       - name: Run GoReleaser
