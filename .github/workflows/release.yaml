@@ -49,6 +49,15 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: arm64
+      - name: Force MSVC for CGO
+        if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
+        run: |
+          # Remove GCC from PATH to force Go to use MSVC
+          $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike '*mingw*' -and $_ -notlike '*gcc*' }) -join ';'
+          echo "PATH=$env:PATH" >> $env:GITHUB_ENV
+          # Explicitly set CGO to use cl
+          echo "CC=cl" >> $env:GITHUB_ENV
+          echo "CXX=cl" >> $env:GITHUB_ENV
       - name: Download Go dependencies
         run: go mod download
       - name: Run GoReleaser
