@@ -54,6 +54,8 @@ jobs:
              mingw-w64-clang-aarch64-cc `
              mingw-w64-clang-aarch64-pkgconf"
           echo "C:\tools\msys64\clangarm64\bin" >> $env:GITHUB_PATH
+          echo "CC=clang" >> $env:GITHUB_ENV
+          echo "CXX=clang++" >> $env:GITHUB_ENV
       - name: Download Go dependencies
         run: go mod download
       - name: Run GoReleaser
@@ -67,9 +69,6 @@ jobs:
           GORELEASER_KEY: ${{ secrets.GORELEASER }}
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
-          CGO_ENABLED: 1
-          CC: clang
-          CXX: clang++
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
