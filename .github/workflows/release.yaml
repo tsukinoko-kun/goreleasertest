@@ -25,7 +25,7 @@ jobs:
             runner: windows-latest
           - goos: windows
             goarch: arm64
-            runner: windows-11-arm
+            runner: windows-latest
           - goos: darwin
             goarch: amd64
             runner: macos-15
@@ -47,15 +47,13 @@ jobs:
         if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
         shell: powershell
         run: |
-          choco install msys2 -y --no-progress
-          & 'C:\tools\msys64\usr\bin\bash.exe' -lc "pacman -Syu --noconfirm"
-          & 'C:\tools\msys64\usr\bin\bash.exe' -lc `
-            "pacman -S --noconfirm --needed `
-             mingw-w64-clang-aarch64-cc `
-             mingw-w64-clang-aarch64-pkgconf"
-          echo "C:\tools\msys64\clangarm64\bin" >> $env:GITHUB_PATH
-          echo "CC=clang" >> $env:GITHUB_ENV
-          echo "CXX=clang++" >> $env:GITHUB_ENV
+          echo "CC=zig cc -target aarch64-windows" >> $env:GITHUB_ENV
+          echo "CXX=zig c++ -target aarch64-windows" >> $env:GITHUB_ENV
+      - name: Install Zig for cross-compilation
+        if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: master
       - name: Download Go dependencies
         run: go mod download
       - name: Run GoReleaser
