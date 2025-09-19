@@ -47,15 +47,15 @@ jobs:
         if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
         shell: powershell
         run: |
-          # Install MSYS2
-          winget install --id=MSYS2.MSYS2 -e --accept-package-agreements --accept-source-agreements
+          # Install MSYS2 via Chocolatey
+          choco install msys2 --no-progress
           
           # Install mingw-w64 aarch64 toolchain
-          & 'C:\msys64\usr\bin\bash.exe' -lc "pacman -Syu --noconfirm"
-          & 'C:\msys64\usr\bin\bash.exe' -lc "pacman -S --noconfirm mingw-w64-aarch64-toolchain"
+          & 'C:\tools\msys64\usr\bin\bash.exe' -lc "pacman -Syu --noconfirm"
+          & 'C:\tools\msys64\usr\bin\bash.exe' -lc "pacman -S --noconfirm mingw-w64-aarch64-toolchain"
           
           # Add to PATH for subsequent steps
-          echo "C:\msys64\mingw64\bin" >> $env:GITHUB_PATH
+          echo "C:\tools\msys64\mingw64\bin" >> $env:GITHUB_PATH
       - name: Download Go dependencies
         run: go mod download
       - name: Run GoReleaser
