@@ -43,17 +43,14 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-
-      - name: Setup Windows ARM64 toolchain
+      - name: Setup Windows ARM64 CGO
         if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
         run: |
-          # Install MinGW-w64 for ARM64
-          choco install mingw --force
-          # Check what compilers are available
-          echo "Available compilers:"
-          where gcc 2>$null || echo "gcc not found"
-          where clang 2>$null || echo "clang not found"
-          where aarch64-w64-mingw32-gcc 2>$null || echo "aarch64-w64-mingw32-gcc not found"
+          # The issue: Windows ARM64 runner has x86_64 GCC that can't handle ARM64 assembly
+          # Simple solution: Use clang which has proper ARM64 support on Windows
+          choco install llvm
+          echo "CC=clang" >> $env:GITHUB_ENV
+          echo "CXX=clang++" >> $env:GITHUB_ENV
       - name: Download Go dependencies
         run: go mod download
       - name: Run GoReleaser
