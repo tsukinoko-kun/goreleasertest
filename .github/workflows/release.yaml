@@ -47,8 +47,11 @@ jobs:
       - name: Setup Windows ARM64 CGO toolchain
         if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
         run: |
-          # Just ensure we have the C/C++ build tools for native ARM64
+          # Ensure we have the C/C++ build tools for native ARM64
           choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools"
+          # Force Go to use MSVC instead of GCC
+          echo "CC=cl" >> $env:GITHUB_ENV
+          echo "CXX=cl" >> $env:GITHUB_ENV
       - name: Download Go dependencies
         run: go mod download
       - name: Run GoReleaser
