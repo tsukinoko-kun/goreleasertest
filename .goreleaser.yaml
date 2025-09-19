@@ -31,6 +31,11 @@ builds:
     goarch:
       - amd64
       - arm64
+    overrides:
+      - goos: windows
+        goarch: arm64
+        env:
+          - CGO_ENABLED=0
     ldflags:
       - -s -w -X github.com/tsukinoko-kun/goreleasertest/main.Version={{.Version}}
 
