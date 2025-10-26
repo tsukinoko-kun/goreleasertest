@@ -38,24 +38,63 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+
       - name: Install Go
         uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
           cache: true
+
+      # Linux: install Zig and configure musl-static CGO toolchain via Zig
+      - name: Install Zig (Linux)
+        if: matrix.goos == 'linux'
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: master
+
+      - name: Setup Linux CGO toolchain (musl static via Zig)
+        if: matrix.goos == 'linux'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          case "${{ matrix.goarch }}" in
+            amd64)
+              echo "CC=zig cc -target x86_64-linux-musl" >> "$GITHUB_ENV"
+              echo "CXX=zig c++ -target x86_64-linux-musl" >> "$GITHUB_ENV"
+              ;;
+            arm64)
+              echo "CC=zig cc -target aarch64-linux-musl" >> "$GITHUB_ENV"
+              echo "CXX=zig c++ -target aarch64-linux-musl" >> "$GITHUB_ENV"
+              ;;
+            *)
+              echo "Unsupported arch for Linux: ${{ matrix.goarch }}" >&2
+              exit 1
+              ;;
+          esac
+          # Ensure cgo is used and force a fully static link
+          echo "CGO_ENABLED=1" >> "$GITHUB_ENV"
+          echo "CGO_LDFLAGS=-static" >> "$GITHUB_ENV"
+          # Force external linker (zig cc) and pass -static to the linker
+          # Using two -ldflags avoids quoting issues in GOFLAGS.
+          echo "GOFLAGS=-ldflags=-linkmode=external -ldflags=-extldflags=-static" >> "$GITHUB_ENV"
+
+      # Windows ARM64 CGO with Zig (existing)
       - name: Setup Windows ARM64 CGO toolchain
         if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
         shell: powershell
         run: |
           echo "CC=zig cc -target aarch64-windows" >> $env:GITHUB_ENV
           echo "CXX=zig c++ -target aarch64-windows" >> $env:GITHUB_ENV
+
       - name: Install Zig for cross-compilation
         if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
         uses: goto-bus-stop/setup-zig@v2
         with:
           version: master
+
       - name: Download Go dependencies
         run: go mod download
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
@@ -67,6 +106,7 @@ jobs:
           GORELEASER_KEY: ${{ secrets.GORELEASER }}
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:

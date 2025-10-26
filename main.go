@@ -16,4 +16,11 @@ func main() {
 	fmt.Println("in:", base64.StdEncoding.EncodeToString(in))
 	fmt.Println()
 	fmt.Println("out:", base64.StdEncoding.EncodeToString(out))
+	fmt.Println()
+
+	decompressed, err := zstd.Decompress(nil, out)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("decompressed:", string(decompressed))
 }
