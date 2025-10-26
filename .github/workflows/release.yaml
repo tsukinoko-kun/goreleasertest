@@ -48,7 +48,7 @@ jobs:
       # Linux: install Zig and configure musl-static CGO toolchain via Zig
       - name: Install Zig (Linux)
         if: matrix.goos == 'linux'
-        uses: goto-bus-stop/setup-zig@v2
+        uses: mlugg/setup-zig@v2
         with:
           version: master
 
@@ -88,7 +88,7 @@ jobs:
 
       - name: Install Zig for cross-compilation
         if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
-        uses: goto-bus-stop/setup-zig@v2
+        uses: mlugg/setup-zig@v2
         with:
           version: master
 
