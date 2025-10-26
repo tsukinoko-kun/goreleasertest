@@ -1,3 +1,11 @@
-# Goreleaser test repo
+# Goreleaser CGO
 
-This is a test repo for CGO with [goreleaser](https://github.com/goreleaser/goreleaser).
+This is a template repo for CGO with [goreleaser](https://github.com/goreleaser/goreleaser).
+
+It builds binaries for Linux, Windows and macOS. All binaries are compiled on the target platform.
+
+Linux builds use Zig to statically link musl-libc.
+
+Windows ARM64 uses Zig for cross-compilation from x86_64 to ARM64.
+
+macOS uses Apple Clang with dynamic linking.
